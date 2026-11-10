@@ -70,6 +70,19 @@
     #mensaje { min-height: 24px; margin: 12px 0 0; font-weight: 600; }
     .nota { color: var(--muted); font-size: .9rem; margin-bottom: 0; }
     .analisis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .prediccion-panel { border: 2px solid #cbdcf8; background: linear-gradient(135deg, #ffffff, #f2f7ff); }
+    .prediccion-formulario { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+    .resultado-prediccion { display: none; margin-top: 18px; }
+    .resultado-prediccion.visible { display: block; }
+    .resumen-prediccion { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .tarjeta-prediccion { background: white; border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
+    .tarjeta-prediccion span { display: block; color: var(--muted); font-size: .9rem; }
+    .tarjeta-prediccion strong { display: block; color: var(--azul); font-size: 1.7rem; margin-top: 4px; }
+    .categorias-prediccion { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .categoria-prediccion { background: #fff; border: 1px solid var(--borde); border-radius: 10px; padding: 12px; }
+    .categoria-prediccion strong { display: block; color: var(--azul); font-size: 1.25rem; }
+    #mensajePrediccion { min-height: 24px; margin: 12px 0 0; font-weight: 600; }
+    .nota-prediccion { color: var(--muted); font-size: .88rem; margin: 12px 0 0; }
     .dato-analisis { background: #f7faff; border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
     .dato-analisis strong { display: block; color: var(--azul); margin-bottom: 3px; }
     .barra-fondo { height: 10px; background: #e6edf6; border-radius: 999px; overflow: hidden; margin-top: 8px; }
@@ -88,6 +101,10 @@
       .rejilla { grid-template-columns: 1fr; }
       .formulario { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .analisis-grid { grid-template-columns: 1fr; }
+      .prediccion-formulario { grid-template-columns: 1fr 1fr; }
+      .prediccion-formulario button { grid-column: 1 / -1; }
+      .categorias-prediccion { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .resumen-prediccion { grid-template-columns: 1fr; }
     }
     @media (max-width: 430px) {
       .formulario { grid-template-columns: 1fr; }
@@ -109,7 +126,7 @@
   <main class="contenedor">
     <section class="intro">
       <h2>Panel de gestión · Sucursal Tigo Los Molinos</h2>
-      <p>Registra la demanda observada, consulta el historial y revisa una estimación inicial de carga de atención.</p>
+      <p>Registra la demanda observada, consulta el historial y utiliza inteligencia artificial para estimar la demanda futura.</p>
     </section>
 
     <section class="rejilla" aria-label="Indicadores principales">
@@ -157,6 +174,49 @@
       </form>
     </section>
 
+    <section class="panel prediccion-panel">
+      <h2>Predecir demanda con inteligencia artificial</h2>
+      <p class="nota">Selecciona una fecha y una hora para consultar la predicción generada por los modelos entrenados.</p>
+      <form id="formularioPrediccion">
+        <div class="prediccion-formulario">
+          <div>
+            <label for="fechaPrediccion">Fecha de la predicción</label>
+            <input type="date" id="fechaPrediccion" required>
+          </div>
+          <div>
+            <label for="horaPrediccion">Hora de la predicción</label>
+            <input type="time" id="horaPrediccion" value="14:00" required>
+          </div>
+          <button type="submit" id="botonPredecir">Predecir demanda</button>
+        </div>
+      </form>
+      <p id="mensajePrediccion" role="status" aria-live="polite"></p>
+      <div id="resultadoPrediccion" class="resultado-prediccion" aria-live="polite">
+        <div class="resumen-prediccion">
+          <div class="tarjeta-prediccion">
+            <span>Clientes estimados por IA</span>
+            <strong id="clientesPredichos">—</strong>
+          </div>
+          <div class="tarjeta-prediccion">
+            <span>Nivel de demanda</span>
+            <strong id="nivelPredicho">—</strong>
+          </div>
+          <div class="tarjeta-prediccion">
+            <span>Asesores de referencia</span>
+            <strong id="asesoresPredichos">—</strong>
+          </div>
+        </div>
+        <h3 style="color: var(--azul); margin: 18px 0 8px;">Demanda estimada por categoría</h3>
+        <div class="categorias-prediccion">
+          <div class="categoria-prediccion"><span>Dispositivos</span><strong id="catDispositivos">—</strong></div>
+          <div class="categoria-prediccion"><span>Quejas</span><strong id="catQuejas">—</strong></div>
+          <div class="categoria-prediccion"><span>Planes</span><strong id="catPlanes">—</strong></div>
+          <div class="categoria-prediccion"><span>Otros</span><strong id="catOtros">—</strong></div>
+        </div>
+        <p class="nota-prediccion">La predicción de clientes y categorías proviene de los modelos de inteligencia artificial. Los asesores son una referencia calculada suponiendo 8 minutos por atención y 30 minutos disponibles por asesor en el periodo.</p>
+      </div>
+    </section>
+
     <section class="panel">
       <h2>Análisis de demanda registrada</h2>
       <div class="analisis-grid">
@@ -170,7 +230,7 @@
           <span id="recomendacionAsesores">Calculando...</span>
         </div>
       </div>
-      <p class="nota">La clasificación y el cálculo son reglas iniciales del prototipo, no una predicción real de inteligencia artificial. La estimación usa los minutos ingresados y una referencia de 30 minutos de capacidad por asesor en el periodo de cálculo.</p>
+      <p class="nota">Este análisis resume los registros históricos guardados. Para estimar demanda futura con inteligencia artificial, utiliza el módulo «Predecir demanda con inteligencia artificial».</p>
     </section>
 
     <section class="panel">
@@ -204,8 +264,9 @@
 
     const hoyLocal = new Date();
     const desplazamiento = hoyLocal.getTimezoneOffset() * 60000;
-    document.getElementById("fecha").value =
-      new Date(hoyLocal.getTime() - desplazamiento).toISOString().slice(0, 10);
+    const fechaHoy = new Date(hoyLocal.getTime() - desplazamiento).toISOString().slice(0, 10);
+    document.getElementById("fecha").value = fechaHoy;
+    document.getElementById("fechaPrediccion").value = fechaHoy;
 
     function escaparCSV(valor) {
       return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
@@ -368,6 +429,46 @@
         mensaje.textContent = "Historial descargado correctamente.";
       } catch (error) {
         mensaje.textContent = "No se pudo descargar el historial: " + error.message;
+      }
+    });
+
+    document.getElementById("formularioPrediccion").addEventListener("submit", async evento => {
+      evento.preventDefault();
+      const boton = document.getElementById("botonPredecir");
+      const mensajePrediccion = document.getElementById("mensajePrediccion");
+      const resultadoPanel = document.getElementById("resultadoPrediccion");
+      const fecha = document.getElementById("fechaPrediccion").value;
+      const hora = document.getElementById("horaPrediccion").value;
+
+      resultadoPanel.classList.remove("visible");
+      mensajePrediccion.textContent = "Consultando el modelo de inteligencia artificial...";
+      boton.disabled = true;
+      boton.textContent = "Calculando...";
+
+      try {
+        const parametros = new URLSearchParams({ fecha, hora });
+        const respuesta = await fetch("/api/predecir?" + parametros.toString(), { cache: "no-store" });
+        const resultado = await respuesta.json();
+        if (!respuesta.ok) throw new Error(resultado.error || "No se pudo realizar la predicción.");
+
+        document.getElementById("clientesPredichos").textContent = resultado.clientes_predichos;
+        document.getElementById("nivelPredicho").textContent = resultado.nivel_demanda;
+        // Referencia operativa transparente: 8 minutos por cliente y 30 minutos de capacidad por asesor.
+        document.getElementById("asesoresPredichos").textContent = Math.ceil((Number(resultado.clientes_predichos) * 8) / 30);
+
+        const categorias = resultado.categorias_predichas || {};
+        document.getElementById("catDispositivos").textContent = (categorias.dispositivos ?? 0) + " clientes";
+        document.getElementById("catQuejas").textContent = (categorias.quejas ?? 0) + " clientes";
+        document.getElementById("catPlanes").textContent = (categorias.planes ?? 0) + " clientes";
+        document.getElementById("catOtros").textContent = (categorias.otros ?? 0) + " clientes";
+
+        resultadoPanel.classList.add("visible");
+        mensajePrediccion.textContent = "Predicción generada correctamente para " + resultado.fecha + " a las " + resultado.hora + ".";
+      } catch (error) {
+        mensajePrediccion.textContent = "No se pudo generar la predicción: " + error.message;
+      } finally {
+        boton.disabled = false;
+        boton.textContent = "Predecir demanda";
       }
     });
 
