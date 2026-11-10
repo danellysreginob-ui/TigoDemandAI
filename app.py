@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 
 from predecir_demanda import predecir
+print("VERSION NUEVA: RUTA DE IA ACTIVADA")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "registros.json"
