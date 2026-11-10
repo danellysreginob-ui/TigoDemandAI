@@ -1,13 +1,15 @@
+
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 import json
+import os
 from datetime import datetime
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "registros.json"
-HOST = "127.0.0.1"
-PORT = 8000
+HOST = "0.0.0.0"
+PORT = int(os.environ.get("PORT", 8001))
 
 
 def leer_registros():
