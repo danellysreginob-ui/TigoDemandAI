@@ -1,0 +1,17 @@
+TigoDemandAI - actualización integrada
+
+ARCHIVOS:
+- app.py: servidor y API.
+- index.html: interfaz integrada.
+- NO se incluye registros.json para evitar reemplazar el historial real.
+
+INSTALACIÓN SEGURA:
+1. Detén el servidor actual con Ctrl+C en la ventana donde se ejecuta.
+2. En C:\Users\GLADYS\TigoDemandAI, copia app.py e index.html como respaldos.
+3. Copia los dos archivos nuevos a esa carpeta y acepta reemplazar esos dos archivos.
+4. NO reemplaces ni borres registros.json.
+5. Ejecuta app.py como lo haces habitualmente.
+6. Abre http://127.0.0.1:8000 y verifica el historial antes de crear nuevos registros.
+
+El servidor lee los registros existentes de registros.json. Al guardar un registro nuevo, agrega el registro al historial existente.
+La estimación de asesores es una regla inicial del prototipo; no es una predicción de IA.

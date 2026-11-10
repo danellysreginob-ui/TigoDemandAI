@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TigoDemandAI | Gestión de demanda</title>
+  <style>
+    :root {
+      --azul: #123b70;
+      --azul-claro: #eaf2ff;
+      --amarillo: #ffcf00;
+      --fondo: #f4f7fb;
+      --texto: #1c2736;
+      --muted: #64748b;
+      --borde: #dce4ef;
+      --blanco: #ffffff;
+      --verde: #137547;
+      --rojo: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      background: var(--azul);
+      color: white;
+      padding: 22px 18px;
+      border-bottom: 5px solid var(--amarillo);
+    }
+    .contenedor { width: min(1120px, 94%); margin: 0 auto; }
+    .marca { display: flex; align-items: center; gap: 12px; }
+    .marca-icono {
+      display: grid; place-items: center; width: 48px; height: 48px;
+      border-radius: 14px; background: var(--amarillo); color: var(--azul);
+      font-weight: 900; font-size: 1.15rem;
+    }
+    h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
+    header p { margin: 3px 0 0; color: #e6efff; }
+    main { padding: 26px 0 42px; }
+    .intro { margin: 0 0 20px; }
+    .intro p { margin: 6px 0; color: var(--muted); }
+    .rejilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .panel, .indicador {
+      background: var(--blanco); border: 1px solid var(--borde);
+      border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px #19375b0a;
+    }
+    .indicador .etiqueta { color: var(--muted); font-size: .92rem; }
+    .indicador .numero { display: block; margin-top: 5px; color: var(--azul); font-size: 2rem; font-weight: 750; }
+    .panel { margin-top: 18px; }
+    h2 { color: var(--azul); font-size: 1.2rem; margin: 0 0 14px; }
+    .formulario { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    label { display: block; font-size: .9rem; font-weight: 650; margin-bottom: 6px; }
+    input {
+      width: 100%; border: 1px solid #b9c7d9; border-radius: 9px;
+      padding: 11px 12px; font: inherit; background: white; color: var(--texto);
+    }
+    input:focus { outline: 3px solid #123b7020; border-color: var(--azul); }
+    .acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    button {
+      border: 0; border-radius: 9px; padding: 11px 16px; font: inherit;
+      font-weight: 700; cursor: pointer; background: var(--azul); color: white;
+    }
+    button:hover { filter: brightness(1.08); }
+    button.secundario { background: var(--azul-claro); color: var(--azul); border: 1px solid #cbdcf8; }
+    button:disabled { opacity: .65; cursor: wait; }
+    #mensaje { min-height: 24px; margin: 12px 0 0; font-weight: 600; }
+    .nota { color: var(--muted); font-size: .9rem; margin-bottom: 0; }
+    .analisis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .dato-analisis { background: #f7faff; border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
+    .dato-analisis strong { display: block; color: var(--azul); margin-bottom: 3px; }
+    .barra-fondo { height: 10px; background: #e6edf6; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .barra { height: 100%; width: 0; background: var(--amarillo); transition: width .25s ease; }
+    .tabla-contenedor { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 520px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--borde); text-align: left; }
+    th { background: #f5f8fc; color: var(--azul); font-size: .9rem; }
+    tbody tr:hover { background: #f9fbff; }
+    .estado { display: inline-block; border-radius: 999px; padding: 4px 10px; font-size: .85rem; font-weight: 750; }
+    .baja { color: #12633e; background: #e4f6eb; }
+    .media { color: #8a5600; background: #fff1c2; }
+    .alta { color: #9d2520; background: #ffe4e2; }
+    footer { color: var(--muted); text-align: center; padding: 0 16px 26px; font-size: .88rem; }
+    @media (max-width: 760px) {
+      .rejilla { grid-template-columns: 1fr; }
+      .formulario { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .analisis-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 430px) {
+      .formulario { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="contenedor marca">
+      <div class="marca-icono">TD</div>
+      <div>
+        <h1>TigoDemandAI</h1>
+        <p>Prototipo de análisis de demanda y asignación de asesores</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="intro">
+      <h2>Panel de gestión · Sucursal Tigo Los Molinos</h2>
+      <p>Registra la demanda observada, consulta el historial y revisa una estimación inicial de carga de atención.</p>
+    </section>
+
+    <section class="rejilla" aria-label="Indicadores principales">
+      <article class="indicador">
+        <span class="etiqueta">Registros guardados</span>
+        <span class="numero" id="totalRegistros">—</span>
+      </article>
+      <article class="indicador">
+        <span class="etiqueta">Clientes registrados</span>
+        <span class="numero" id="totalClientes">—</span>
+      </article>
+      <article class="indicador">
+        <span class="etiqueta">Asesores estimados</span>
+        <span class="numero" id="totalAsesores">—</span>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Registrar demanda observada</h2>
+      <form id="formulario">
+        <div class="formulario">
+          <div>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+          <div>
+            <label for="hora">Hora del registro</label>
+            <input type="time" id="hora" name="hora" required>
+          </div>
+          <div>
+            <label for="clientes">Cantidad de clientes</label>
+            <input type="number" id="clientes" name="clientes" min="1" max="10000" step="1" placeholder="Ej. 18" required>
+          </div>
+          <div>
+            <label for="minutos">Minutos por cliente</label>
+            <input type="number" id="minutos" name="minutos" min="1" max="1440" step="0.5" value="8" required>
+          </div>
+        </div>
+        <div class="acciones">
+          <button type="submit" id="guardar">Guardar registro</button>
+          <button type="button" class="secundario" id="exportarCSV">Descargar historial CSV</button>
+          <button type="button" class="secundario" id="actualizar">Actualizar datos</button>
+        </div>
+        <p id="mensaje" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Análisis de demanda registrada</h2>
+      <div class="analisis-grid">
+        <div class="dato-analisis">
+          <strong>Nivel de demanda</strong>
+          <span id="nivelDemanda">Cargando datos...</span>
+          <div class="barra-fondo"><div class="barra" id="barraDemanda"></div></div>
+        </div>
+        <div class="dato-analisis">
+          <strong>Recomendación inicial de personal</strong>
+          <span id="recomendacionAsesores">Calculando...</span>
+        </div>
+      </div>
+      <p class="nota">La clasificación y el cálculo son reglas iniciales del prototipo, no una predicción real de inteligencia artificial. La estimación usa los minutos ingresados y una referencia de 30 minutos de capacidad por asesor en el periodo de cálculo.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Historial de demanda</h2>
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Clientes</th>
+              <th>Minutos por cliente</th>
+            </tr>
+          </thead>
+          <tbody id="filas">
+            <tr><td colspan="4">Cargando historial...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    TigoDemandAI · Prototipo académico. Los registros corresponden a los datos ingresados por el usuario.
+  </footer>
+
+  <script>
+    const formulario = document.getElementById("formulario");
+    const mensaje = document.getElementById("mensaje");
+    const botonGuardar = document.getElementById("guardar");
+
+    const hoyLocal = new Date();
+    const desplazamiento = hoyLocal.getTimezoneOffset() * 60000;
+    document.getElementById("fecha").value =
+      new Date(hoyLocal.getTime() - desplazamiento).toISOString().slice(0, 10);
+
+    function escaparCSV(valor) {
+      return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
+    }
+
+    async function obtenerRegistros() {
+      const respuesta = await fetch("/api/registros", { cache: "no-store" });
+      if (!respuesta.ok) {
+        let detalle = "No se pudieron consultar los registros.";
+        try {
+          const error = await respuesta.json();
+          if (error.error) detalle = error.error;
+        } catch (_) {}
+        throw new Error(detalle);
+      }
+      const registros = await respuesta.json();
+      if (!Array.isArray(registros)) {
+        throw new Error("El servidor devolvió un historial con formato inesperado.");
+      }
+      return registros;
+    }
+
+    async function cargarRegistros() {
+      const filas = document.getElementById("filas");
+      filas.replaceChildren();
+
+      try {
+        const registros = await obtenerRegistros();
+        let clientesTotales = 0;
+        let trabajoTotal = 0;
+
+        if (registros.length === 0) {
+          const fila = filas.insertRow();
+          const celda = fila.insertCell();
+          celda.colSpan = 4;
+          celda.textContent = "Todavía no hay registros.";
+        }
+
+        registros.forEach(registro => {
+          const clientes = Number(registro.clientes) || 0;
+          const minutos = Number(registro.minutos) || 0;
+          clientesTotales += clientes;
+          trabajoTotal += clientes * minutos;
+
+          const fila = filas.insertRow();
+          [registro.fecha, registro.hora, clientes, minutos].forEach(valor => {
+            const celda = fila.insertCell();
+            celda.textContent = valor ?? "";
+          });
+        });
+
+        document.getElementById("totalRegistros").textContent = registros.length;
+        document.getElementById("totalClientes").textContent = clientesTotales;
+
+        // Estimación agregada para el conjunto de registros mostrado.
+        const asesores = Math.ceil(trabajoTotal / 30);
+        document.getElementById("totalAsesores").textContent = asesores;
+
+        const nivel = clientesTotales < 10 ? "Baja" :
+                      clientesTotales < 25 ? "Media" : "Alta";
+        const nivelElemento = document.getElementById("nivelDemanda");
+        nivelElemento.replaceChildren();
+        const etiqueta = document.createElement("span");
+        etiqueta.className = "estado " + nivel.toLowerCase();
+        etiqueta.textContent = nivel;
+        nivelElemento.appendChild(etiqueta);
+
+        document.getElementById("barraDemanda").style.width =
+          Math.min(100, clientesTotales * 2) + "%";
+
+        document.getElementById("recomendacionAsesores").textContent =
+          registros.length === 0
+            ? "Registra la demanda para obtener una estimación."
+            : "La regla actual estima " + asesores +
+              " asesor(es) para la carga registrada. Ajusta la referencia según la duración real del periodo y la capacidad del equipo.";
+
+        if (mensaje.textContent.startsWith("No se pudo cargar")) {
+          mensaje.textContent = "";
+        }
+      } catch (error) {
+        const fila = filas.insertRow();
+        const celda = fila.insertCell();
+        celda.colSpan = 4;
+        celda.textContent = "No se pudo cargar el historial. " + error.message;
+        document.getElementById("totalRegistros").textContent = "—";
+        document.getElementById("totalClientes").textContent = "—";
+        document.getElementById("totalAsesores").textContent = "—";
+        document.getElementById("nivelDemanda").textContent = "No disponible";
+        document.getElementById("recomendacionAsesores").textContent = "Comprueba que el servidor esté activo.";
+        mensaje.textContent = "No se pudo cargar el historial. Comprueba que app.py esté ejecutándose.";
+      }
+    }
+
+    formulario.addEventListener("submit", async evento => {
+      evento.preventDefault();
+      mensaje.textContent = "";
+      botonGuardar.disabled = true;
+      botonGuardar.textContent = "Guardando...";
+
+      const datos = {
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value,
+        clientes: Number(document.getElementById("clientes").value),
+        minutos: Number(document.getElementById("minutos").value)
+      };
+
+      try {
+        const respuesta = await fetch("/api/registros", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos)
+        });
+
+        const resultado = await respuesta.json();
+        if (!respuesta.ok) throw new Error(resultado.error || "No se pudo guardar.");
+
+        mensaje.textContent = "Registro guardado correctamente.";
+        document.getElementById("clientes").value = "";
+        await cargarRegistros();
+      } catch (error) {
+        mensaje.textContent = "Error: " + error.message;
+      } finally {
+        botonGuardar.disabled = false;
+        botonGuardar.textContent = "Guardar registro";
+      }
+    });
+
+    document.getElementById("actualizar").addEventListener("click", async () => {
+      mensaje.textContent = "Actualizando historial...";
+      await cargarRegistros();
+      if (!mensaje.textContent.startsWith("No se pudo cargar")) {
+        mensaje.textContent = "Historial actualizado.";
+      }
+    });
+
+    document.getElementById("exportarCSV").addEventListener("click", async () => {
+      try {
+        const registros = await obtenerRegistros();
+        if (registros.length === 0) {
+          mensaje.textContent = "No hay registros para descargar.";
+          return;
+        }
+
+        const contenido = [
+          ["Fecha", "Hora", "Clientes", "Minutos por cliente"],
+          ...registros.map(r => [r.fecha, r.hora, r.clientes, r.minutos])
+        ].map(fila => fila.map(escaparCSV).join(";")).join("\r\n");
+
+        const archivo = new Blob(["\uFEFF" + contenido], {
+          type: "text/csv;charset=utf-8;"
+        });
+        const url = URL.createObjectURL(archivo);
+        const enlace = document.createElement("a");
+        enlace.href = url;
+        enlace.download = "historial_demanda_tigo.csv";
+        document.body.appendChild(enlace);
+        enlace.click();
+        enlace.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        mensaje.textContent = "Historial descargado correctamente.";
+      } catch (error) {
+        mensaje.textContent = "No se pudo descargar el historial: " + error.message;
+      }
+    });
+
+    cargarRegistros();
+  </script>
+</body>
+</html>
